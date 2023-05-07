@@ -52,8 +52,10 @@ while True:     #Definindo e estabelecendo comunicação com o servidor
             UDP.sendto(message.encode(), destiny) #Enviando a mensagem 
 
 
-        message, server = UDP.recvfrom(1024) #Para receber algo do servidor
-        print(server, message.decode()) #Imprimindo resposta do servidor
+    message, server = UDP.recvfrom(1024) #Para receber algo do servidor
+    if message.decode().find("INFO") != -1:
+        message = message.decode()[5:len(message):1]
+        print(message) #Imprimindo resposta do servidor
 
 
 UDP.close() #Encerra a conexão

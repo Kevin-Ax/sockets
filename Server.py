@@ -18,21 +18,25 @@ TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ORIG = (HOST, PORT) #Definindo o host de origem
 UDP.bind(ORIG) #Define o endereço do socket do nosso servidor
 
-USER = [] #lista de suários conectados ao servidor.
+USER = {} #Lista de suários conectados ao servidor.
 
 while True:
+
     if len(USER)==0: print("Aguardando conexão...")
-
-
-
+    
     message, client = UDP.recvfrom(1024) #Lendo as informações recebidos do cliente
-    if message.decode().find("FILE") != -1:
+    
+    if message.decode().find("USER") != -1: #Caso a mensagem do cliente for um cadastro de usuário
+        name = message.decode()[5:len(message):1]    #verifica o nome do cliente
+        USER[name]=client   #armazena o nome do cliente e o cliente
+        message = "INFO:"+name+" entrou"    #cria a mensgame de alerta de entrada de novo usuário
+
+        for c in USER: #Para cada usuário ativo
+            UDP.sendto(message.encode(), USER[c]) #Enviando uma mensagem dizendo que o novo usuário entrou
+
+    elif message.decode().find("LIST") != -1:   
         break
-    elif (message.decode().find("USER") != -1):
-        pos = message.decode().find(":")
-        name = message[pos:len(message):1]
-        print(name)
-        UDP.sendto('ack'.encode(), client)
+        
 
 UDP.close() #Encerra a conexão
         
