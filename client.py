@@ -40,22 +40,43 @@ while True:     #Definindo e estabelecendo comunicação com o servidor
             UDP.sendto(message.encode(), destiny) #Enviando a mensagem 
             
         elif  message.find("/file")!=-1:    #Verifica se a mensagem digitada foi um 'file' e se sim, envia os dados
-            message = "FILE:"+message[6:len(message):1]
-            TCP.sendto(message.encode(), destiny) #Enviando a mensagem (com TCP pois há troca de arquivos)
-            
+            UDP.sendto("FILE".encode(), destiny)
+            message = "FILE:"+message[6:len(message):1]+"\n"
+            TCP.connect(destiny)
+            TCP.send(message.encode()) #Enviando a mensagem (com TCP pois há troca de arquivos)
+            TCP.close()
+        
         elif  message.find("/get")!=-1: #Verifica se o comando foi um '/get' e se sim, pede os dados do arquivo solicitado
-            message = "GET:"+message[6:len(message):1]
-            TCP.sendto(message.encode(), destiny) #Enviando a mensagem (com TCP pois há troca de arquivos)
-            
+            UDP.sendto("GET".encode(), destiny)
+            message = "GET:"+message[6:len(message):1+"\n"]
+            TCP.connect(destiny)
+            TCP.send(message.encode()) #Enviando a mensagem (com TCP pois há troca de arquivos)
+            TCP.close()
+        
         else: 
-            message = "MSG:"+actualUser+":"+message #Envia no formato adequado uma mensagem qualquer que o usuário digitar
+            message = "MSG:"+message #Envia no formato adequado uma mensagem qualquer que o usuário digitar
             UDP.sendto(message.encode(), destiny) #Enviando a mensagem 
 
 
+    #Tratamento das mensagens recebidas do servidor
     message, server = UDP.recvfrom(1024) #Para receber algo do servidor
+    
+    #Tratamento de respostas do servidor do tipo INFO
     if message.decode().find("INFO") != -1:
         message = message.decode()[5:len(message):1]
-        print(message) #Imprimindo resposta do servidor
+
+    #Tratamento de respostas do servidor do tipo MSG
+    elif message.decode().find("MSG") != -1:
+        #Formatando a resposta do servidor para ficar na maneira mostrada na especificação do trabalho
+        message = message.decode()
+        message = message[4:len(message):1]
+        name = message[0:message.find(':'):1]
+        message = name + " disse: " + message[message.find(':')+1:len(message):1]
+        #A mensagem é mostrada e nada abaixo dela preisa ser executado nessa iteração
+        print(message)
+        continue
+
+    if message.decode() != '' : print(message.decode()) #Imprimindo resposta do servidor
 
 
 UDP.close() #Encerra a conexão
