@@ -5,8 +5,20 @@
 
 #Bibliotecas necessárias
 import socket
+import random
 
-HOST = '127.0.1.1'  #Endereço IP do cliente
+def generate_random_ip():
+    # Gera um octeto aleatório para cada uma das quatro partes do endereço IP
+    octet1 = str(127)
+    octet2 = str(0)
+    octet3 = str(random.randint(0, 255))
+    octet4 = str(random.randint(0, 255))
+    # Combina os octetos em um endereço IP
+    random_ip = octet1 + '.' + octet2 + '.' + octet3 + '.' + octet4
+    return random_ip
+
+
+HOST =  generate_random_ip() #Endereço IP do cliente
 PORT = 20000    #Porta em que o servidor está (destino)
 
 #Definindo nosso protoclo como UDP para enviar mensagens
@@ -64,6 +76,7 @@ while True:     #Definindo e estabelecendo comunicação com o servidor
     #Tratamento de respostas do servidor do tipo INFO
     if message.decode().find("INFO") != -1:
         message = message.decode()[5:len(message):1]
+        print(message) 
 
     #Tratamento de respostas do servidor do tipo MSG
     elif message.decode().find("MSG") != -1:
@@ -75,8 +88,6 @@ while True:     #Definindo e estabelecendo comunicação com o servidor
         #A mensagem é mostrada e nada abaixo dela preisa ser executado nessa iteração
         print(message)
         continue
-
-    if message.decode() != '' : print(message.decode()) #Imprimindo resposta do servidor
 
 
 UDP.close() #Encerra a conexão
