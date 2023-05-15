@@ -5,28 +5,13 @@
 
 #Bibliotecas necessárias
 import socket
-import random
 import threading
-
-def generate_random_ip():
-    # Gera um octeto aleatório para cada uma das quatro partes do endereço IP
-    octet1 = str(127)
-    octet2 = str(0)
-    octet3 = str(random.randint(0, 255))
-    octet4 = str(random.randint(0, 255))
-    # Combina os octetos em um endereço IP
-    random_ip = octet1 + '.' + octet2 + '.' + octet3 + '.' + octet4
-    return random_ip
-
 
 HOST =  "127.0.0.1" #Endereço IP do cliente
 PORT = 20000    #Porta em que o servidor está (destino)
 
 #Definindo nosso protoclo como UDP para enviar mensagens
 UDP = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) 
-#Definindo nosso protocolo como TCP para enviar de arquivos
-TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-TCP.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
 
 destiny = (HOST, PORT) #Definindo o host de origem
 
@@ -53,7 +38,7 @@ def ouvindo(UDP):
             #A mensagem é mostrada e nada abaixo dela preisa ser executado nessa iteração
             print(message)
 
-t = threading.Thread(target=ouvindo, args=(UDP,))
+t = threading.Thread(target=ouvindo, args=(UDP,))   #criação das threads para atender os clientes em parlelo
 t.start()
 
 while True:     #Definindo e estabelecendo comunicação com o servidor
@@ -79,20 +64,26 @@ while True:     #Definindo e estabelecendo comunicação com o servidor
         elif  message.find("/file")!=-1:    #Verifica se a mensagem digitada foi um 'file' e se sim, envia os dados
             content = input() 
             UDP.sendto("FILE".encode(), destiny)
+            #Definindo nosso protocolo como TCP para enviar de arquivos
+            TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            TCP.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
             message = "FILE:"+message[6:len(message):1]+"\n"
             TCP.connect(destiny)
             TCP.send(message.encode()) #Enviando a mensagem (com TCP pois há troca de arquivos)
             TCP.send(content.encode()) #Enviando conteúdo do arquivo (com TCP pois há troca de arquivos)
-            TCP.close()
+            TCP.close()     #encerra conexão tcp
 
         elif  message.find("/get")!=-1: #Verifica se o comando foi um '/get' e se sim, pede os dados do arquivo solicitado
             UDP.sendto("GET".encode(), destiny)
+            #Definindo nosso protocolo como TCP para enviar de arquivos
+            TCP = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            TCP.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR,1)
             message = "GET:"+message[5:len(message):1]
             TCP.connect(destiny)
             TCP.send(message.encode()) #Enviando a mensagem (com TCP pois há troca de arquivos)
-            message = TCP.recv(1025)
+            message = TCP.recv(1025)    #recebe a mensagem do fluxo de dados
             print(message.decode())
-            TCP.close()
+            TCP.close()     #encerra conexão tcp
         
         else: 
             message = "MSG:"+message #Envia no formato adequado uma mensagem qualquer que o usuário digitar

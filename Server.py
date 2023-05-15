@@ -105,33 +105,11 @@ TCP.listen(1)
 USER = {} #Lista de suários conectados ao servidor.
 FILES = {}  #armazena os arquivos que serão enviados pelos usuários
 
-def conexoes(con, client):
-    msg = con.recv(1024)
-    msg = msg.decode()
-    action, message = msg.split(':', 1)
-    if action == "FILE":
-        content = message[message.find("\n")+1:len(message):1]
-        message = message[5:message.find("\n"):1]
-        FILES[message] = content
-        message = "INFO:"+ message
-        for us in USER:
-            if USER[us]!=client : UDP.sendto(message.encode(), USER[us])
-        message = ''    #Envia um sinal ao cliente que mandou a mensagem (evitar que o emissor da mensagem fique travado)
-        UDP.sendto(message.encode(), client)
 
-def recieve_TCP():
-    while True:
-        con, client = TCP.recvfrom(1024) #Lendo as informações recebidas
-        # inicia uma nova thread para lidar com a solicitação do cliente
-        threading.Thread(target=conexoes, args=(con, client)).start()
-
-def run_server():
+def run_server():   #chamada do inicio do server
     
     if len(USER)==0: print("Aguardando conexão...")
     threading.Thread(target=reciveClient, args=(UDP, )).start()
     
 run_server()
-    
-# UDP.close() #Encerra a conexão
 
-# TCP.close() #Encerra a conexão
