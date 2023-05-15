@@ -84,7 +84,7 @@ while True:     #Definindo e estabelecendo comunicação com o servidor
             TCP.send(message.encode()) #Enviando a mensagem (com TCP pois há troca de arquivos)
             TCP.send(content.encode()) #Enviando conteúdo do arquivo (com TCP pois há troca de arquivos)
             TCP.close()
-            
+
         elif  message.find("/get")!=-1: #Verifica se o comando foi um '/get' e se sim, pede os dados do arquivo solicitado
             UDP.sendto("GET".encode(), destiny)
             message = "GET:"+message[5:len(message):1]
@@ -92,6 +92,7 @@ while True:     #Definindo e estabelecendo comunicação com o servidor
             TCP.send(message.encode()) #Enviando a mensagem (com TCP pois há troca de arquivos)
             message = TCP.recv(1025)
             print(message.decode())
+            TCP.close()
         
         else: 
             message = "MSG:"+message #Envia no formato adequado uma mensagem qualquer que o usuário digitar
